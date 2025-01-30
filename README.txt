@@ -13,14 +13,14 @@
   ▓ OVERVIEW  
   **_vertex_** is a firmware running on an **ATmega328P**, controlling an  
   LED strip and a buzzer inside **СоюзПечаль**.  
-  It communicates with an external command hub via **USART**,  
+  It communicates with an _obelisk_ via USART,  
   allowing dynamic lighting modes and interactions.  
   Simple. Flexible. Cool as hell.  
 
   ───────────────────────────────────────────────────────────────  
   ▓ HARDWARE  
   ▪ **MCU**: ATmega328P (Currently Arduino Nano, later standalone)  
-  ▪ **OUTPUTS**: LED Strip (WS2812B / other) + Buzzer  
+  ▪ **OUTPUTS**: LED Strip + Buzzer  
   ▪ **INTERFACE**: USART for external command control  
   ▪ **POWER**: USB / External 5V  
 
@@ -33,12 +33,11 @@
 
   ───────────────────────────────────────────────────────────────  
   ▓ BUILD & FLASH  
-  Compile with **AVR-GCC** or Arduino IDE.  
-  Flash using **AVRDUDE** or Arduino bootloader.  
+  Compile with **AVR-GCC**
+  Flash using **AVRDUDE**
 
   ```sh  
-  make flash  # If using a Makefile  
-  avrdude -c arduino -p m328p -P /dev/ttyUSB0 -b 115200 -U flash:w:vertex.hex:i  
+  make flash
   ```
 
   ───────────────────────────────────────────────────────────────  
@@ -49,32 +48,8 @@
   ```
   CMD:SET_MODE:1      # Switch to mode 1  
   CMD:BUZZER:ON       # Enable buzzer  
-  CMD:SET_COLOR:255,0,0  # Set LED color to red  
   CMD:POWER_OFF       # Go to low-power mode  
   ```
-
-  ───────────────────────────────────────────────────────────────  
-  ▓ USAGE  
-  Example communication using Python:  
-  ```python  
-  import serial  
-
-  ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  
-  ser.write(b'CMD:SET_MODE:2
-')  # Switch to mode 2  
-  response = ser.readline().decode().strip()  # Read response (if any)  
-  print("Response:", response)  
-  ser.close()
-  ```
-
-  ───────────────────────────────────────────────────────────────  
-  ▓ LICENSE  
-  Open-source, because why not?  
-
-  ───────────────────────────────────────────────────────────────  
-  ▓ AUTHOR & CONTACT  
-  Developed by [Your Name / Handle]  
-  Questions? Bugs? Hit me up at [your contact info]  
 
   ───────────────────────────────────────────────────────────────  
   ▓ FINAL WORDS  

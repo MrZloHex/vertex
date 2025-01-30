@@ -37,7 +37,8 @@
   Flash using **AVRDUDE**
 
   ```sh  
-  make flash
+  make &&
+  make PORT=/dev/ttyUSB0 flash
   ```
 
   ───────────────────────────────────────────────────────────────  

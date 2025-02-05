@@ -47,9 +47,9 @@
   Sample command format:  
 
   ```
-  CMD:SET_MODE:1      # Switch to mode 1  
-  CMD:BUZZER:ON       # Enable buzzer  
-  CMD:POWER_OFF       # Go to low-power mode  
+  CMD:SET_MODE:1      ; Switch to mode 1  
+  CMD:BUZZER:ON       ; Enable buzzer  
+  CMD:POWER_OFF       ; Go to low-power mode  
   ```
 
   ───────────────────────────────────────────────────────────────  

@@ -99,7 +99,7 @@ $(OBJ)/%.o: $(LIB)/%.c
 endif
 
 $(BIN)/%.hex: $(BIN)/%.elf
-	@echo "  CP 	 $(patsubst $(BIN)/%,%,$@)"
+	@echo "  CP 	   $(patsubst $(BIN)/%,%,$@)"
 	$(Q) $(CP) -O ihex -R .eeprom $< $@
 
 clean:

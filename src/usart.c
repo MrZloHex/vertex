@@ -65,6 +65,15 @@ usart_send(uint8_t data)
     UDR0 = data;
 }
 
+uint8_t
+usart_send_data(uint8_t *data, size_t size)
+{
+    for (size_t i = 0; i < size; ++i)
+    { usart_send(data[i]); }
+
+    return 0; 
+}
+
 void
 usart_send_string(const char *str)
 {

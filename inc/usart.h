@@ -16,8 +16,10 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdint.h>
+
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 
 #ifndef USART_RX_BUFFER_SIZE
@@ -32,6 +34,7 @@
 #define USART_ERROR_FRAME   (1 << 0)
 #define USART_ERROR_OVERRUN (1 << 1)
 #define USART_ERROR_PARITY  (1 << 2)
+
 
 typedef void (*usart_callback_t)(const uint8_t *message, uint8_t length);
 
@@ -67,7 +70,10 @@ usart_set_error_callback(USART_Buffer_t *usartData, usart_error_callback_t callb
 void
 usart_send(uint8_t data);
 
-void 
+uint8_t
+usart_send_data(uint8_t *data, size_t size);
+
+void
 usart_send_string(const char *str);
 
 bool
@@ -92,6 +98,8 @@ usart_get_errors
 
 void
 usart_clear_errors(USART_Buffer_t *usartData);
+
+
 
 #endif /* __USART_H__ */
 

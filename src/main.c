@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
@@ -6,9 +5,13 @@
 
 #define LED_PIN     PB5
 
+#include "trace.h"
+
 #include "usart.h"
 USART_Buffer_t usart_data;
 
+#define SERIAL_SEND_IMPL usart_send_data
+#include "serial.h"
 
 #include "protocol.h"
 
@@ -17,16 +20,12 @@ void message_callback(const uint8_t *message, uint8_t length) {
     strcpy(raw_msg, (const char *)message);
     raw_msg[length-1] = 0;
 
-    usart_send_string("Got: `");
-    for (uint8_t i = 0; i < strlen(raw_msg); i++) {
-        usart_send(raw_msg[i]);
-    }
-    usart_send_string("`\n");
+    TRACE_DEBUG("RECV `%s`", raw_msg);
 
     MLP_Msg mlp_msg = mlp_parse_msg(raw_msg);
 
-    char buffer[50];
-    snprintf(buffer, sizeof(buffer), 
+    TRACE_INFO
+    (
         "RECV\t%s %s `%s` `%s` `%s` `%s`",
         MLP_MsgType_STR[mlp_msg.type],
         MLP_MsgAction_STR[mlp_msg.action],
@@ -35,8 +34,6 @@ void message_callback(const uint8_t *message, uint8_t length) {
         mlp_msg.params[2],
         mlp_msg.params[3]
     );
-
-    usart_send_string(buffer);
 
     free(raw_msg);
 }
@@ -61,6 +58,8 @@ void error_callback(uint8_t error_flags) {
 #define TIMER_IMPL
 #include "timer.h"
 
+
+
 int
 main(void)
 {
@@ -73,10 +72,12 @@ main(void)
     usart_set_error_callback(&usart_data, error_callback);
 
     timer0_init();
+
+    tracer_init(TRC_DEBUG, TP_ALL);
+    TRACE_INFO("BOOTING UP");
+
+
     sei();
-
-    usart_send_string("Enter a message:\n");
-
 
     Timer t = { 0 };
     timer_set(&t, 500, true);

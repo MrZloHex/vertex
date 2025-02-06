@@ -29,6 +29,45 @@ void error_callback(uint8_t error_flags) {
     usart_send_string("\n");
 }
 
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdint.h>
+
+volatile uint32_t g_millis = 0;
+
+ISR(TIMER0_COMPA_vect)
+{
+    g_millis++;
+}
+
+void timer0_init(void)
+{
+    // Configure Timer0 in CTC mode with a compare value that gives a 1 ms period.
+    // Assuming an 8 MHz clock with a prescaler of 64:
+    // OCR0A = (F_CPU / (prescaler * 1000)) - 1
+    TCCR0A = (1 << WGM01);                   // CTC mode
+    TCCR0B = (1 << CS01) | (1 << CS00);        // Prescaler 64
+    OCR0A = (F_CPU / (64UL * 1000UL)) - 1; // Compare match value for 1 ms
+    TIMSK0 = (1 << OCIE0A);                    // Enable compare match interrupt
+}
+
+uint32_t avr_get_tick(void)
+{
+    uint32_t millis;
+    // To prevent race conditions, disable interrupts temporarily.
+    uint8_t sreg = SREG;
+    cli();
+    millis = g_millis;
+    SREG = sreg;
+    return millis;
+}
+
+
+
+#define TIMER_GET_TICK avr_get_tick
+#define TIMER_IMPL
+#include "timer.h"
+
 int
 main(void)
 {
@@ -40,18 +79,33 @@ main(void)
     usart_set_callback(&usart_data, message_callback);
     usart_set_error_callback(&usart_data, error_callback);
 
+    timer0_init();
     sei();
 
     usart_send_string("Enter a message:\n");
 
 
+    Timer t = { 0 };
+    timer_set(&t, 1000, true);
+    timer_start(&t);
+
+    bool flag = true;
+
     while (1)
     {
-
-        PORTB |= (1 << LED_PIN);
-        _delay_ms(1000);
-        PORTB &= ~(1 << LED_PIN);
-        _delay_ms(500);
+        if (timer_timeout(&t))
+        {
+            if (flag)
+            {
+                PORTB |= (1 << LED_PIN);
+                flag = false;
+            }
+            else
+            {
+                PORTB &= ~(1 << LED_PIN);
+                flag = true;
+            }
+        }
     }
 
     return 0;

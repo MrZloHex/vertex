@@ -1,3 +1,4 @@
+#if 0
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
@@ -58,8 +59,6 @@ void error_callback(uint8_t error_flags) {
 #define TIMER_IMPL
 #include "timer.h"
 
-
-
 int
 main(void)
 {
@@ -74,7 +73,7 @@ main(void)
     timer0_init();
 
     tracer_init(TRC_DEBUG, TP_ALL);
-    TRACE_INFO("BOOTING UP");
+    TRACE_INFO("HUY HUYHUYUP");
 
 
     sei();
@@ -94,3 +93,75 @@ main(void)
 
     return 0;
 }
+
+
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+int main(void) {
+    // Configure PD6 (Arduino digital pin 6) as an output.
+    DDRD |= (1 << PD6);
+
+    while (1) {
+        // Turn the buzzer on by setting PD6 high.
+        PORTD |= (1 << PD6);
+        _delay_ms(500);  // Wait 500 milliseconds
+
+        // Turn the buzzer off by setting PD6 low.
+        PORTD &= ~(1 << PD6);
+        _delay_ms(500);  // Wait 500 milliseconds
+    }
+
+    return 0;
+}
+
+
+#endif 
+    
+#include <avr/io.h>
+#include <util/delay.h>
+
+#define F_CPU 16000000UL
+#define MAX_DUTY 500  // ICR1 value, defines the maximum duty cycle
+
+int main(void) {
+    // Set D9 (PB1) as output.
+    DDRB |= (1 << PB1);
+
+    // Configure Timer1 in Fast PWM mode (Mode 14) using ICR1 as TOP.
+    // COM1A1: Non-inverting mode on OC1A (D9)
+    // WGM13, WGM12, WGM11: Set Fast PWM mode with ICR1 as TOP.
+    // CS10: No prescaling (adjust if needed).
+    TCCR1A = (1 << COM1A1) | (1 << WGM11);
+    TCCR1B = (1 << WGM13) | (1 << WGM12) | (1 << CS10);
+
+    // Set TOP value to define the PWM frequency.
+    ICR1 = MAX_DUTY;
+
+    // Start with the LED off.
+    OCR1A = 0;
+
+    // Variables to control the duty cycle.
+    uint16_t duty = 0;
+    int8_t step = 1;  // Increment (or decrement) for duty cycle
+
+    while (1) {
+        // Update the duty cycle.
+        OCR1A = duty;
+        // Delay for a visible fade effect.
+        _delay_ms(10);
+
+        // Increment or decrement the duty cycle.
+        duty += step;
+
+        // Reverse direction when reaching the limits.
+        if (duty == 0 || duty >= MAX_DUTY) {
+            step = -step;
+        }
+    }
+
+    return 0;
+}
+
+

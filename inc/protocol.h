@@ -1,57 +1,43 @@
-/* =============================================================================
- *                          ░▒▓█ _VERTEX_ █▓▒░
- *
- *   File       : protocol.h
- *   Author     : MrZloHex
- *   Date       : 2025-02-01
- *
- *   Description:
- *      MLP - MonoLith's Protocol
- *
- * =============================================================================
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
+
+#include <stdint.h>
+#include <stddef.h>
+
+/* Simple colon-separated protocol with newline terminator:
+ * <TO>:<PAYLOAD>:<FROM>\n
  */
 
-#ifndef __PROTOCOL_H__
-#define __PROTOCOL_H__
-
 typedef enum
 {
-    MT_UNKNOWN = 0x0U,
-    MT_CMD     = 0x1U,
-    MT_LOG     = 0x2U,
-    MT_OK      = 0x3U,
-    MT_ERR     = 0x4U
-} MLP_MsgType;
+    APP_UNREG  = 0,
+    APP_WAIT   = 1,
+    APP_READY  = 2
+} app_state_t;
 
-typedef enum
-{
-    MA_UNKNOWN = 0x0U,
-    MA_REG     = 0x1U,
-    MA_GET     = 0x2U,
-    MA_SET     = 0x3U,
-    MA_HRT     = 0x4U,
-} MLP_MsgAction;
+void
+proto_init(void);
 
+void
+proto_poll(void); /* consume RX, process lines, emit replies */
 
-extern const char *MLP_MsgType_STR[];
+void
+proto_try_register(void); /* send REG packet */
 
-extern const char *MLP_MsgAction_STR[];
+void
+proto_on_registered_ok(void);
 
-#define MAX_PARAMS (5)
+app_state_t
+proto_get_state(void);
 
-typedef struct
-{
-    MLP_MsgType   type;
-    MLP_MsgAction action;
-    char         *params[MAX_PARAMS];
-} MLP_Msg;
+void
+proto_send(const char *to, const char *payload);
 
+/* helpers for building replies */
+void
+proto_send_ok(const char *topic);
 
-MLP_Msg
-mlp_parse_msg(char *msg);
+void
+proto_send_error(const char *topic, const char *reason);
 
-char *
-mlp_make_msg(MLP_Msg);
-
-#endif /* __PROTOCOL_H__ */
-
+#endif /* PROTOCOL_H */

@@ -1,4 +1,4 @@
-# ==============================================================================
+# # ==============================================================================
 #
 #	 ███╗   ███╗ ██████╗ ███╗   ██╗ ██████╗ ██╗     ██╗████████╗██╗  ██╗
 #	 ████╗ ████║██╔═══██╗████╗  ██║██╔═══██╗██║     ██║╚══██╔══╝██║  ██║
@@ -31,52 +31,55 @@ else
 	Q =
 endif
 
-BUILD 		?= debug
+BUILD	?= debug
 
 
-CC			 = avr-gcc
-CP			 = avr-objcopy
-SZ			 = avr-size
-AD			 = avrdude
+CC 	= avr-gcc
+CP 	= avr-objcopy
+SZ 	= avr-size
+AD 	= avrdude
 
-CFLAGS		 = -mmcu=$(MCU) -DF_CPU=$(F_CPU)
-CFLAGS		+= -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
-CFLAGS		+= -MMD -MP
-CFLAGS		+= -Iinc -Ilib
+CFLAGS	 = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DBAUD=$(BAUDRATE)
+CFLAGS	+= -Wall -Wextra -Wpedantic -std=c2x -Wstrict-aliasing
+CFLAGS 	+= -Wshadow -Wundef -Wstrict-prototypes
+CFLAGS 	+= -ffunction-sections -fdata-sections -fpack-struct -fshort-enums
+CFLAGS	+= -MMD -MP
+CFLAGS	+= -Iinc -Ilib
 
 ifeq ($(BUILD),debug)
 	CFLAGS	+= -Og -g
 else ifeq ($(BUILD),release)
-	CFLAGS	+= -O2 -Werror
+	CFLAGS	+= -Os -Werror
 else
 	$(error Unknown build mode: $(BUILD). Use BUILD=debug or BUILD=release)
 endif
 
-LDFLAGS		 = -Wl,--gc-sections -mmcu=$(MCU)
+LDFLAGS	 = -Wl,--gc-sections -mmcu=$(MCU)
 
 
-TARGET		 = vertex
+TARGET	 = vertex
 
-MCU			 = atmega328p
-F_CPU		 = 16000000
-PROGRAMMER	 = arduino
+MCU	 = atmega328p
+F_CPU	 = 16000000
+PROGRAMMER = arduino
+BAUDRATE = 9600
 
-SRC			 = src
-OBJ			 = obj
-BIN			 = bin
-LIB			 =
-TST			 =
+SRC	 = src
+OBJ	 = obj
+BIN	 = bin
+LIB	 =
+TST	 =
 
 
-SOURCES		 = $(shell find $(SRC) -type f -name '*.c')
-OBJECTS		 = $(addprefix $(OBJ)/, $(SOURCES))
+SOURCES	 = $(shell find $(SRC) -type f -name '*.c')
+OBJECTS	 = $(addprefix $(OBJ)/, $(SOURCES))
 
 ifneq ($(strip $(LIB)),)
-LIBRARY		 = $(wildcard $(LIB)/*.c)
-OBJECTS		+= $(addprefix $(OBJ)/, $(LIBRARY))
+LIBRARY	 = $(wildcard $(LIB)/*.c)
+OBJECTS	+= $(addprefix $(OBJ)/, $(LIBRARY))
 endif
 
-OBJECTS		:= $(patsubst %.c, %.o, $(OBJECTS))
+OBJECTS	:= $(patsubst %.c, %.o, $(OBJECTS))
 
 
 all: $(BIN)/$(TARGET).elf $(BIN)/$(TARGET).hex

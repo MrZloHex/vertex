@@ -43,19 +43,19 @@ proto_send(const char *to, const char *payload)
 }
 
 void
-proto_send_ok(const char *topic)
+proto_send_ok(const char *topic, const char *to)
 {
     char pl[48];
     snprintf(pl, sizeof(pl), "%s:OK", topic);
-    proto_send("OBELISK", pl);
+    proto_send(to, pl);
 }
 
 void
-proto_send_error(const char *topic, const char *reason)
+proto_send_error(const char *topic, const char *reason, const char *to)
 {
     char pl[64];
     snprintf(pl, sizeof(pl), "%s:ERROR:%s", topic, reason);
-    proto_send("OBELISK", pl);
+    proto_send(to, pl);
 }
 
 void
@@ -67,24 +67,15 @@ proto_init(void)
     effects_set_mode(s_nv.led.mode);
     effects_set_brightness(s_nv.led.brightness);
 
-    s_state = APP_UNREG;
-    s_last_reg_try = 0;
+    s_state = APP_READY;
+    proto_send("ALL", "REG");
 }
+
 
 app_state_t
 proto_get_state(void)
 {
     return s_state;
-}
-
-void
-proto_try_register(void)
-{
-    char pl[48];
-    snprintf(pl, sizeof(pl), "REG:%s", FW_VERSION);
-    proto_send("OBELISK", pl);
-    s_last_reg_try = millis();
-    s_state = APP_WAIT;
 }
 
 static void
@@ -105,7 +96,7 @@ handle_cmd(char *to, char *payload, char *from)
 
     if (!verb)
     {
-        proto_send_error("GEN", "EMPTY");
+        proto_send_error("GEN", "EMPTY", from);
         return;
     }
 
@@ -126,7 +117,7 @@ handle_cmd(char *to, char *payload, char *from)
 
     if (strcmp(verb, "PING") == 0)
     {
-        proto_send("OBELISK", "PONG");
+        proto_send(from, "PONG");
         return;
     }
 
@@ -134,33 +125,33 @@ handle_cmd(char *to, char *payload, char *from)
     {
         if (!arg1)
         {
-            proto_send_error("LAMP", "BAD");
+            proto_send_error("LAMP", "BAD", from);
             return;
         }
         if (strcmp(arg1, "ON") == 0)
         {
-            lamp_set(1);
-            s_nv.lamp_on = 1;
-            storage_save(&s_nv);
-            proto_send_ok("LAMP");
-        }
-        else if (strcmp(arg1, "OFF") == 0)
-        {
             lamp_set(0);
             s_nv.lamp_on = 0;
             storage_save(&s_nv);
-            proto_send_ok("LAMP");
+            proto_send_ok("LAMP", from);
+        }
+        else if (strcmp(arg1, "OFF") == 0)
+        {
+            lamp_set(1);
+            s_nv.lamp_on = 1;
+            storage_save(&s_nv);
+            proto_send_ok("LAMP", from);
         }
         else if (strcmp(arg1, "TOGGLE") == 0)
         {
             lamp_set(!lamp_get());
             s_nv.lamp_on = lamp_get();
             storage_save(&s_nv);
-            proto_send_ok("LAMP");
+            proto_send_ok("LAMP", from);
         }
         else
         {
-            proto_send_error("LAMP", "BAD");
+            proto_send_error("LAMP", "BAD", from);
         }
         return;
     }
@@ -169,7 +160,7 @@ handle_cmd(char *to, char *payload, char *from)
     {
         if (!arg1)
         {
-            proto_send_error("LED", "BAD");
+            proto_send_error("LED", "BAD", from);
             return;
         }
         if (strcmp(arg1, "OFF") == 0)
@@ -204,12 +195,12 @@ handle_cmd(char *to, char *payload, char *from)
         }
         else
         {
-            proto_send_error("LED", "BAD");
+            proto_send_error("LED", "BAD", from);
             return;
         }
         s_nv.led = effects_get();
         storage_save(&s_nv);
-        proto_send_ok("LED");
+        proto_send_ok("LED", from);
         return;
     }
 
@@ -218,27 +209,27 @@ handle_cmd(char *to, char *payload, char *from)
         /* BUZZ:ON|OFF[:ms] */
         if (!arg1)
         {
-            proto_send_error("BUZZ", "BAD");
+            proto_send_error("BUZZ", "BAD", from);
             return;
         }
         if (strcmp(arg1, "ON") == 0)
         {
             buzzer_set(1);
-            proto_send_ok("BUZZ");
+            proto_send_ok("BUZZ", from);
         }
         else if (strcmp(arg1, "OFF") == 0)
         {
             buzzer_set(0);
-            proto_send_ok("BUZZ");
+            proto_send_ok("BUZZ", from);
         }
         else
         {
-            proto_send_error("BUZZ", "BAD");
+            proto_send_error("BUZZ", "BAD", from);
         }
         return;
     }
 
-    proto_send_error("GEN", "UNKNOWN");
+    proto_send_error("GEN", "UNKNOWN", from);
 }
 
 void
@@ -254,7 +245,7 @@ proto_poll(void)
             char *to, *pay, *from;
             if (!parse_packet_alloc(s_rxline, &to, &pay, &from))
             { 
-                proto_send_error("PARSE", "FORMAT");
+                proto_send_error("PARSE", "FORMAT", "ALL");
             }
             if (to && pay && from)
             {
@@ -262,7 +253,7 @@ proto_poll(void)
             }
             else
             {
-                proto_send_error("GEN", "FORMAT");
+                proto_send_error("GEN", "FORMAT", "ALL");
             }
             s_rxlen = 0;
             free(to);
@@ -279,20 +270,12 @@ proto_poll(void)
             {
                 /* overflow, reset */
                 s_rxlen = 0;
-                proto_send_error("GEN", "OVF");
+                proto_send_error("GEN", "OVF", "ALL");
             }
         }
     }
 
-    /* Registration / retry */
-    if (s_state == APP_UNREG)
-    {
-        if (elapsed(s_last_reg_try, REG_RETRY_PERIOD_MS))
-        {
-            proto_try_register();
-        }
-    }
-    else if (s_state == APP_WAIT)
+    if (s_state == APP_WAIT)
     {
         if (elapsed(s_last_reg_try, REG_ACK_TIMEOUT_MS))
         {

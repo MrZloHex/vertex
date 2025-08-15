@@ -35,9 +35,9 @@ proto_send(const char *to, const char *payload);
 
 /* helpers for building replies */
 void
-proto_send_ok(const char *topic);
+proto_send_ok(const char *topic, const char *to);
 
 void
-proto_send_error(const char *topic, const char *reason);
+proto_send_error(const char *topic, const char *reason, const char *to);
 
 #endif /* PROTOCOL_H */

@@ -1,5 +1,5 @@
-#ifndef EFFECTS_H
-#define EFFECTS_H
+#ifndef __LED_H__
+#define __LED_H__
 
 #include <stdint.h>
 
@@ -32,4 +32,4 @@ effects_get(void);
 void
 effects_tick_1ms(void); /* call from main loop each ms tick */
 
-#endif /* EFFECTS_H */
+#endif /* __LED_H__ */

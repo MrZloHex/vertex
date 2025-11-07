@@ -2,7 +2,7 @@
 #define STORAGE_H
 
 #include <stdint.h>
-#include "effects.h"
+#include "led.h"
 
 typedef struct
 {

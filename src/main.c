@@ -3,10 +3,12 @@
 #include <util/delay.h>
 
 #include "uart.h"
-#include "timer.h"
 #include "gpio.h"
 #include "protocol.h"
-#include "effects.h"
+#include "led.h"
+#include "alarm.h"
+#define TIMER_IMPL
+#include "timer.h"
 
 
 int
@@ -16,6 +18,7 @@ main(void)
 
     gpio_init();
     timer_init();
+    alarm_init();
     uart_init(BAUD);
 
     sei();
@@ -26,5 +29,6 @@ main(void)
     {
         proto_poll();
         effects_tick_1ms();
+        alarm_loop();
     }
 }

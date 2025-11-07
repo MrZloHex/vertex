@@ -2,7 +2,8 @@
 #include "uart.h"
 #include "timer.h"
 #include "gpio.h"
-#include "effects.h"
+#include "led.h"
+#include "alarm.h"
 #include "storage.h"
 #include "config.h"
 #include "util.h"
@@ -54,7 +55,7 @@ void
 proto_send_error(const char *topic, const char *reason, const char *to)
 {
     char pl[64];
-    snprintf(pl, sizeof(pl), "%s:ERROR:%s", topic, reason);
+    snprintf(pl, sizeof(pl), "ERR:%s:%s", topic, reason);
     proto_send(to, pl);
 }
 
@@ -68,7 +69,7 @@ proto_init(void)
     effects_set_brightness(s_nv.led.brightness);
 
     s_state = APP_READY;
-    proto_send("ALL", "REG");
+    proto_send("ALL", "REG:VERTEX");
 }
 
 
@@ -117,7 +118,7 @@ handle_cmd(char *to, char *payload, char *from)
 
     if (strcmp(verb, "PING") == 0)
     {
-        proto_send(from, "PONG");
+        proto_send(from, "PONG:PONG");
         return;
     }
 
@@ -245,7 +246,7 @@ proto_poll(void)
             char *to, *pay, *from;
             if (!parse_packet_alloc(s_rxline, &to, &pay, &from))
             { 
-                proto_send_error("PARSE", "FORMAT", "ALL");
+                proto_send_error("PROTO", "FORMAT", "ALL");
             }
             if (to && pay && from)
             {
@@ -272,14 +273,6 @@ proto_poll(void)
                 s_rxlen = 0;
                 proto_send_error("GEN", "OVF", "ALL");
             }
-        }
-    }
-
-    if (s_state == APP_WAIT)
-    {
-        if (elapsed(s_last_reg_try, REG_ACK_TIMEOUT_MS))
-        {
-            s_state = APP_UNREG; /* timeout -> try again later */
         }
     }
 }

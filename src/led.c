@@ -1,10 +1,11 @@
-#include "effects.h"
+#include "led.h"
 #include "gpio.h"
 #include "timer.h"
 
 static led_state_t s_led = { .mode = LED_MODE_OFF, .brightness = 0 };
-static uint32_t    s_last_ms = 0;
 static int16_t     s_dir = 1; /* for FADE ramp */
+static bool        s_blink = true;
+static Timer       s_led_tim;
 
 void
 effects_init(void)
@@ -12,6 +13,8 @@ effects_init(void)
     s_led.mode       = LED_MODE_OFF;
     s_led.brightness = 0;
     led_pwm_set(0);
+    timer_set(&s_led_tim, 100, true);
+    timer_start(&s_led_tim);
 }
 
 void
@@ -43,9 +46,8 @@ effects_get(void)
 void
 effects_tick_1ms(void)
 {
-    uint32_t now = millis();
-    if (!elapsed(s_last_ms, 10)) { return; } /* 100 Hz update */
-    s_last_ms = now;
+    if (!timer_timeout(&s_led_tim))
+    { return; }
 
     switch (s_led.mode)
     {
@@ -65,15 +67,8 @@ effects_tick_1ms(void)
         } break;
         case LED_MODE_BLINK:
         {
-            /* 1 Hz blink, 50% duty */
-            if ((now / 500UL) & 1UL)
-            {
-                led_pwm_set(0);
-            }
-            else
-            {
-                led_pwm_set(s_led.brightness);
-            }
+            led_pwm_set(s_blink * s_led.brightness);
+            s_blink = !s_blink; 
         } break;
     }
 }

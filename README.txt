@@ -42,15 +42,37 @@
   ```
 
   ───────────────────────────────────────────────────────────────  
-  ▓ USART COMMANDS  
-  _vertex_ listens for commands over USART to control lighting & sound.  
-  Sample command format:  
+  ▓ PROTOCOL  
+  Packet format:  <TO>:<PAYLOAD>:<FROM>\n  
+  Payload format: VERB:NOUN[:ARG1[:ARG2]]  
 
-  ```
-  CMD:SET_MODE:1      ; Switch to mode 1  
-  CMD:BUZZER:ON       ; Enable buzzer  
-  CMD:POWER_OFF       ; Go to low-power mode  
-  ```
+  Responses:  OK:<TOPIC>  or  ERR:<TOPIC>:<REASON>  
+
+  ─── PING ───  
+  PING:PINT                     -> PONG:PONG  
+
+  ─── ON / OFF / TOGGLE ───  
+  ON:LAMP                       -> OK:LAMP  
+  OFF:LAMP                      -> OK:LAMP  
+  TOGGLE:LAMP                   -> OK:LAMP  
+  ON:LED                        -> OK:LED  
+  OFF:LED                       -> OK:LED  
+  TOGGLE:LED                    -> OK:LED  
+  ON:BUZZ                       -> OK:BUZZ  
+  OFF:BUZZ                      -> OK:BUZZ  
+
+  ─── SET ───  
+  SET:LED:MODE:SOLID            -> OK:LED  
+  SET:LED:MODE:FADE             -> OK:LED  
+  SET:LED:MODE:BLINK            -> OK:LED  
+  SET:LED:BRIGHT:<0..255>       -> OK:LED  
+
+  ─── GET ───  
+  GET:LAMP:STATE                -> OK:LAMP:STATE:ON/OFF  
+  GET:LED:STATE                 -> OK:LED:STATE:ON/OFF  
+  GET:LED:MODE                  -> OK:LED:MODE:SOLID/FADE/BLINK  
+  GET:LED:BRIGHT                -> OK:LED:BRIGHT:<0..255>  
+  GET:UPTIME                    -> OK:UPTIME:<ms>
 
   ───────────────────────────────────────────────────────────────  
   ▓ FINAL WORDS  

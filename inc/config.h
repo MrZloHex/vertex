@@ -12,7 +12,7 @@
 #endif
 
 #ifndef FW_VERSION
-#define FW_VERSION "1.0.0"
+#define FW_VERSION "2.1.1"
 #endif
 
 /* Pin mapping (Arduino Nano):
@@ -37,6 +37,6 @@
 #define REG_RETRY_PERIOD_MS  5000UL
 
 /* Parser */
-#define RX_LINE_MAX          96
+#define RX_LINE_MAX          256
 
 #endif /* __CONFIG_H__ */

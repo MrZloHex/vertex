@@ -22,8 +22,10 @@ storage_load(nv_state_t *out)
         out->magic     = NV_MAGIC;
         out->version   = NV_VER;
         out->lamp_on   = 0;
-        out->led.mode  = LED_MODE_OFF;
+        out->led.mode  = LED_MODE_BLINK;
+        out->led.state = 1;
         out->led.brightness = 64;
+        out->led.actual_bright = 0;
         out->crc8      = calc_crc(out);
         return;
     }
@@ -33,8 +35,10 @@ storage_load(nv_state_t *out)
         out->magic     = NV_MAGIC;
         out->version   = NV_VER;
         out->lamp_on   = 0;
-        out->led.mode  = LED_MODE_OFF;
+        out->led.mode  = LED_MODE_BLINK;
+        out->led.state = 1;
         out->led.brightness = 64;
+        out->led.actual_bright = 0;
         out->crc8      = calc_crc(out);
         return;
     }

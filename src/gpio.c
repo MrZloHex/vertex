@@ -3,13 +3,10 @@
 #include <avr/io.h>
 
 static uint8_t s_lamp_on = 0;
-static int a;
 
 void
 gpio_init(void)
 {
-    a = 1;
-    // asd = 1;
     LED_DDR  |= LED_PIN_BM;   /* PB1 output (Timer1 controls pin) */
     BUZZ_DDR |= BUZZ_PIN_BM;  /* PD6 output */
     LAMP_DDR |= LAMP_PIN_BM;  /* PD4 output */

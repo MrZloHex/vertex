@@ -7,7 +7,7 @@
 
 
   ░▒▓█ _vertex_ █▓▒░  
-  The beating heart of **СоюзПечаль**—a night lamp that does more than shine.  
+  The beating heart of **СоюзПечаль**-a night lamp that does more than shine.  
 
   ───────────────────────────────────────────────────────────────  
   ▓ OVERVIEW  
